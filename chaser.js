@@ -40,6 +40,19 @@ class Sprite {
     this.x += (target.x - this.x) * this.speed;
     this.y += (target.y - this.y) * this.speed;
   }
+  pushOffFrom(other) {
+    let [dx, dy] = [other.x - this.x, other.y - this.y];
+    const distanceBetween = Math.hypot(dx, dy);
+    let distanceToMove = this.radius + other.radius - distanceBetween;
+    if (distanceToMove > 0) {
+      dx /= distanceBetween;
+      dy /= distanceBetween;
+      this.x -= dx * distanceToMove / 2;
+      this.y -= dy * distanceToMove / 2;
+      other.x += dx * distanceToMove / 2;
+      other.y += dy * distanceToMove / 2;
+    }
+  }
 }
 
 class Player extends Sprite {
@@ -80,20 +93,6 @@ function updateMouse(event) {
   const { left, top } = canvas.getBoundingClientRect();
   mouse.x = event.clientX - left;
   mouse.y = event.clientY - top;
-}
-
-function pushOff(c1, c2) {
-  let [dx, dy] = [c2.x - c1.x, c2.y - c1.y];
-  const L = Math.hypot(dx, dy);
-  let distToMove = c1.radius + c2.radius - L;
-  if (distToMove > 0) {
-    dx /= L;
-    dy /= L;
-    c1.x -= dx * distToMove / 2;
-    c1.y -= dy * distToMove / 2;
-    c2.x += dx * distToMove / 2;
-    c2.y += dy * distToMove / 2;
-  }
 }
 
 function updateScene() {
