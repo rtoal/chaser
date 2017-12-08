@@ -5,7 +5,7 @@ const progressBar = document.querySelector("progress");
 document.body.addEventListener("mousemove", updateMouse);
 
 canvas.addEventListener("click", () => {
-  if (progressBar.value === 0) {
+  if (game.isOver()) {
     game.start();
   }
 });
@@ -15,6 +15,9 @@ const game = {
     progressBar.value = 100;
     Object.assign(player, { x: canvas.width / 2, y: canvas.height / 2 });
     requestAnimationFrame(drawScene);
+  },
+  isOver() {
+    return progressBar.value <= 0;
   }
 };
 
