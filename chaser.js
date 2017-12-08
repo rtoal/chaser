@@ -2,15 +2,26 @@ const canvas = document.querySelector("canvas");
 const ctx = canvas.getContext("2d");
 const progressBar = document.querySelector("progress");
 
-function startGame() {
+document.body.addEventListener("mousemove", updateMouse);
+
+canvas.addEventListener("click", () => {
   if (progressBar.value === 0) {
+    game.start();
+  }
+});
+
+const game = {
+  start() {
     progressBar.value = 100;
     Object.assign(player, { x: canvas.width / 2, y: canvas.height / 2 });
     requestAnimationFrame(drawScene);
   }
-}
+};
 
 class Sprite {
+  constructor(x, y, radius, color, speed) {
+    Object.assign(this, { x, y, radius, color, speed });
+  }
   draw() {
     ctx.fillStyle = this.color;
     ctx.beginPath();
@@ -22,14 +33,17 @@ class Sprite {
     const distanceBetween = Math.hypot(this.x - other.x, this.y - other.y);
     return distanceBetween < this.radius + other.radius;
   }
+  moveToward(target) {
+    this.x += (target.x - this.x) * this.speed;
+    this.y += (target.y - this.y) * this.speed;
+  }
 }
 
 class Player extends Sprite {
   constructor(x, y, radius, color, speed) {
-    super();
+    super(x, y, radius, color, speed);
     this.image = new Image();
     this.image.src = "https://image.ibb.co/fPcP2w/8_Bit_Character_1_copy.png";
-    Object.assign(this, { x, y, radius, color, speed });
   }
   draw() {
     ctx.drawImage(
@@ -46,8 +60,7 @@ let player = new Player(250, 150, 30, "lemonchiffon", 0.07);
 
 class Enemy extends Sprite {
   constructor(x, y, radius, color, speed) {
-    super();
-    Object.assign(this, { x, y, radius, color, speed });
+    super(x, y, radius, color, speed);
   }
 }
 
@@ -60,16 +73,10 @@ let enemies = [
 ];
 
 let mouse = { x: 0, y: 0 };
-document.body.addEventListener("mousemove", updateMouse);
 function updateMouse(event) {
   const { left, top } = canvas.getBoundingClientRect();
   mouse.x = event.clientX - left;
   mouse.y = event.clientY - top;
-}
-
-function moveToward(leader, follower, speed) {
-  follower.x += (leader.x - follower.x) * speed;
-  follower.y += (leader.y - follower.y) * speed;
 }
 
 function pushOff(c1, c2) {
@@ -87,8 +94,8 @@ function pushOff(c1, c2) {
 }
 
 function updateScene() {
-  moveToward(mouse, player, player.speed);
-  enemies.forEach(enemy => moveToward(player, enemy, enemy.speed));
+  player.moveToward(mouse);
+  enemies.forEach(enemy => enemy.moveToward(player));
   for (let i = 0; i < enemies.length; i++) {
     for (let j = i + 1; j < enemies.length; j++) {
       pushOff(enemies[i], enemies[j]);
@@ -119,5 +126,4 @@ function drawScene() {
   }
 }
 
-canvas.addEventListener("click", startGame);
 requestAnimationFrame(drawScene);
