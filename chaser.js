@@ -10,15 +10,6 @@ function startGame() {
   }
 }
 
-function distanceBetween(sprite1, sprite2) {
-  return Math.hypot(sprite1.x - sprite2.x, sprite1.y - sprite2.y);
-}
-
-// Woops there is a bug because the player image is a rectangle
-function haveCollided(sprite1, sprite2) {
-  return distanceBetween(sprite1, sprite2) < sprite1.radius + sprite2.radius;
-}
-
 class Sprite {
   draw() {
     ctx.fillStyle = this.color;
@@ -26,6 +17,10 @@ class Sprite {
     ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
+  }
+  collidedWith(other) {
+    const distanceBetween = Math.hypot(this.x - other.x, this.y - other.y);
+    return distanceBetween < this.radius + other.radius;
   }
 }
 
@@ -37,11 +32,17 @@ class Player extends Sprite {
     Object.assign(this, { x, y, radius, color, speed });
   }
   draw() {
-    ctx.drawImage(this.image, this.x, this.y, 25, 30);
+    ctx.drawImage(
+      this.image,
+      this.x - this.radius / 2,
+      this.y - this.radius / 2,
+      this.radius,
+      this.radius
+    );
   }
 }
 
-let player = new Player(250, 150, 10, "lemonchiffon", 0.07);
+let player = new Player(250, 150, 30, "lemonchiffon", 0.07);
 
 class Enemy extends Sprite {
   constructor(x, y, radius, color, speed) {
@@ -55,7 +56,7 @@ let enemies = [
   new Enemy(200, 250, 17, "rgba(200, 100, 0, 0.7)", 0.01),
   new Enemy(150, 180, 22, "rgba(50, 10, 70, 0.5)", 0.002),
   new Enemy(0, 200, 10, "rgba(250, 210, 70, 0.6)", 0.008),
-  new Enemy(400, 400, 15, "rgba(0, 200, 250, 0.6)", 0.008),
+  new Enemy(400, 400, 15, "rgba(0, 200, 250, 0.6)", 0.008)
 ];
 
 let mouse = { x: 0, y: 0 };
@@ -65,8 +66,6 @@ function updateMouse(event) {
   mouse.x = event.clientX - left;
   mouse.y = event.clientY - top;
 }
-
-// TODO function start game here
 
 function moveToward(leader, follower, speed) {
   follower.x += (leader.x - follower.x) * speed;
@@ -91,13 +90,13 @@ function updateScene() {
   moveToward(mouse, player, player.speed);
   enemies.forEach(enemy => moveToward(player, enemy, enemy.speed));
   for (let i = 0; i < enemies.length; i++) {
-    for (let j = i+1; j < enemies.length; j++) {
+    for (let j = i + 1; j < enemies.length; j++) {
       pushOff(enemies[i], enemies[j]);
     }
   }
   enemies.forEach(enemy => {
-    if (haveCollided(enemy, player)) {
-      progressBar.value -= 2;
+    if (enemy.collidedWith(player)) {
+      progressBar.value -= 0.5;
     }
   });
 }
@@ -114,7 +113,7 @@ function drawScene() {
   updateScene();
   if (progressBar.value <= 0) {
     ctx.font = "30px Arial";
-    ctx.fillText("Game over, click to play again", 0, canvas.height / 2);
+    ctx.fillText("Game over, click to play again", 10, 50);
   } else {
     requestAnimationFrame(drawScene);
   }
