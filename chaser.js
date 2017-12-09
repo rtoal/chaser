@@ -100,7 +100,7 @@ function updateScene() {
   enemies.forEach(enemy => enemy.moveToward(player));
   for (let i = 0; i < enemies.length; i++) {
     for (let j = i + 1; j < enemies.length; j++) {
-      pushOff(enemies[i], enemies[j]);
+      enemies[i].pushOffFrom(enemies[j]);
     }
   }
   enemies.forEach(enemy => {
